@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="estylos.css">
+        <title>Viajes Jose</title>
+    </head>
+    <body>
+        <h1>CARGAR VIAJE</h1>
+        <div class="formulario">
+        <form>
+            <label for="fecha">Fecha</label>
+            <input type="date" id="fecha" name="fecha" required><br>
+            <label id="t_destino">Destino. comienza y termina en Victoria</label>
+            <div id="destinos">
+                <input type="text" id="destino" name="destino" placeholder="Destino " list="lista_destinos">
+                <label>detalle de carga</label>
+                <input type="text" name="detetalle1" placeholder="clase de pescado">
+                <input type="text" name="detetalle2" placeholder="kg">
+                <button>AGREGAR OTRO DESTINO</button></div>
+            <datalist id="lista_destinos"></datalist>    
+            <br>
+            <button>CALCULAR</button>
+            <br><br><label for="km">Km</label>
+            <input type="number" id="km" name="km" placeholder="KM"><br>
+            <label for="acomp">Acompañante</label>
+            <input type="text" id="acomp" name="acomp" placeholder="Nombre">
+            <label for="comprador">Comprador</label>
+            <input type="text" id="comprador" name="comprador" placeholder="Nombre">
+            <br><label for="dinero_bruto">Dinero Bruto</label>
+            <input type="number" id="dinero_bruto" name="dinero_bruto">
+            <label for="gasto">Gasto</label>
+            <input type="number" id="gasto" name="gasto">
+            <br><button>GUARDAR VIAJE</button>
+        </form>
+        
+        <hr>
+        
+        <h2>REGISTRO DE VIAJES</h2>
+        <div class="buscar">
+            <label for="por_fecha">Buscar por fecha:</label>
+            <input type="date" id="por_fecha">
+            <label for="por_destino">Buscar por destino</label>
+            <input type="text" id="por_destino">
+            <label for="por_acompañante">Buscar por acompañante:</label>
+            <input type="text" id="por_acompañante">
+            <button>BUSCAR</button>
+        </div>
+        <div class="contenedor-tabla">
+            <table>
+                <thead>
+                    <tr>
+                    <th>Fecha</th>
+                    <th>Destino</th>
+                    <th>Kilometros</th>
+                    <th>Acompañante</th>
+                    <th>Comprador</th>
+                    <th>Kg Carga</th>
+                    <th>Dinero Bruto</th>
+                    <th>Gastos</th>
+                    <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-viajes">
+                </tbody>
+            </table>
+        </div>
+    <script src="script.js"></script>
+    </body>
+</html>
