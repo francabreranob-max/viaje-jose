@@ -13,15 +13,20 @@
             <label for="fecha">Fecha</label>
             <input type="date" id="fecha" name="fecha" required><br>
             <label id="t_destino">Destino. comienza y termina en Victoria</label>
+
             <div id="destinos">
-                <input type="text" id="destino" name="destino" placeholder="Destino " list="lista_destinos">
-                <label>detalle de carga</label>
-                <input type="text" name="detetalle1" placeholder="clase de pescado">
-                <input type="text" name="detetalle2" placeholder="kg">
-                <button>AGREGAR OTRO DESTINO</button></div>
+                <div class="destino">
+                    <input type="text" name="destino" placeholder="Destino" list="lista_destinos">
+                    <div class="cargas"></div>
+                    <button type="button" class="agregar-carga">AGREGAR CARGA</button>
+                </div>
+            </div>
+
+            <br><button type="button" id="agregar-destino">AGREGAR OTRO DESTINO</button>
+            <br>
             <datalist id="lista_destinos"></datalist>    
             <br>
-            <button>CALCULAR</button>
+            <button type="button" id="calcular">CALCULAR</button>
             <br><br><label for="km">Km</label>
             <input type="number" id="km" name="km" placeholder="KM"><br>
             <label for="acomp">Acompañante</label>
@@ -32,7 +37,7 @@
             <input type="number" id="dinero_bruto" name="dinero_bruto">
             <label for="gasto">Gasto</label>
             <input type="number" id="gasto" name="gasto">
-            <br><button>GUARDAR VIAJE</button>
+            <br><button type="submit">GUARDAR VIAJE</button>
         </form>
         
         <hr>
@@ -45,7 +50,7 @@
             <input type="text" id="por_destino">
             <label for="por_acompañante">Buscar por acompañante:</label>
             <input type="text" id="por_acompañante">
-            <button>BUSCAR</button>
+            <button type="button" id="buscar">BUSCAR</button>
         </div>
         <div class="contenedor-tabla">
             <table>

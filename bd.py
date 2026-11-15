@@ -190,3 +190,47 @@ def crear_acompañante(conexion, nombre):
 
     cursor.close()
     return nuevo_id
+
+def crear_viaje(conexion, fecha, km, bruto, gastos, id_acompañante=None):
+    cursor = conexion.cursor()
+
+    total = bruto - gastos
+
+    consulta = """
+        INSERT INTO viajes
+        (fecha, km_hechos, dinero_bruto_total, gastos_viaje, total, id_acompañante)
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """
+
+    cursor.execute(consulta, (fecha, km, bruto, gastos, total, id_acompañante))
+
+    nuevo_id = cursor.lastrowid
+    cursor.close()
+
+    return nuevo_id
+
+
+def crear_viaje_destino(conexion, id_viaje, id_destino):
+    cursor = conexion.cursor()
+
+    cursor.execute(
+        "INSERT INTO viajes_destino (id_viaje, id_destino) VALUES (%s, %s)",
+        (id_viaje, id_destino)
+    )
+
+    nuevo_id = cursor.lastrowid
+    cursor.close()
+
+    return nuevo_id
+
+
+def crear_carga(conexion, kg, id_pescado, id_viaje_destino):
+    cursor = conexion.cursor()
+
+    cursor.execute(
+        """INSERT INTO carga (kilogramos, id_pescado, id_viaje_destino)
+           VALUES (%s, %s, %s)""",
+        (kg, id_pescado, id_viaje_destino)
+    )
+
+    cursor.close()

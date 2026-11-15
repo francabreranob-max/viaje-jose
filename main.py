@@ -1,6 +1,7 @@
 from bd import conectar_bd,obtener_viajes,obtener_destino,buscar_destino_por_nombre,crear_destino,buscar_comprador_por_nombre,obtener_compradores,crear_comprador
 from bd import obtener_pescados, buscar_pescado_por_nombre, crear_pescado
 from bd import obtener_acompañantes, buscar_acompañante_por_nombre, crear_acompañante
+from bd import crear_viaje, crear_viaje_destino, crear_carga
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -163,3 +164,68 @@ def guardar_acompañante(datos: dict):
         "id": nuevo_id,
         "nombre": nombre
     }
+
+@app.post("/viajes")
+def guardar_viaje(datos: dict):
+    conexion = conectar_bd()
+
+    try:
+        id_viaje = crear_viaje(
+            conexion,
+            datos["fecha"],
+            datos["km"],
+            datos["dinero_bruto"],
+            datos["gastos"],
+            datos.get("id_acompañante")
+        )
+
+        for destino in datos["destinos"]:
+            id_destino = buscar_destino_por_nombre(
+                conexion, destino["nombre"]
+            )
+
+            if id_destino:
+                id_destino = id_destino[0]["id"]
+            else:
+                id_destino = crear_destino(
+                    conexion, destino["nombre"], None
+                )
+
+            id_viaje_destino = crear_viaje_destino(
+                conexion, id_viaje, id_destino
+            )
+
+            for carga in destino.get("cargas", []):
+                coincidencias = buscar_pescado_por_nombre(
+                    conexion, carga["pescado"]
+                )
+
+                pescado = next(
+                    (p for p in coincidencias
+                     if p["nombre"].casefold() == carga["pescado"].strip().casefold()),
+                    None
+                )
+
+                if pescado:
+                    id_pescado = pescado["id"]
+                else:
+                    id_pescado = crear_pescado(
+                        conexion, carga["pescado"].strip().capitalize()
+                    )
+
+                crear_carga(
+                    conexion,
+                    carga["kg"],
+                    id_pescado,
+                    id_viaje_destino
+                )
+
+        conexion.commit()
+        return {"mensaje": "Viaje guardado", "id_viaje": id_viaje}
+
+    except Exception as error:
+        conexion.rollback()
+        return {"error": str(error)}
+
+    finally:
+        conexion.close()
