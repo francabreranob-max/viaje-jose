@@ -3,6 +3,7 @@ from bd import obtener_pescados, buscar_pescado_por_nombre, crear_pescado
 from bd import obtener_acompañantes, buscar_acompañante_por_nombre, crear_acompañante
 from bd import crear_viaje, crear_viaje_destino, crear_carga
 from fastapi import FastAPI
+from logica import calcular_km_recorrido
 from fastapi.middleware.cors import CORSMiddleware
 
 #para iniciar el programa: uvicorn main:app --reload
@@ -170,22 +171,54 @@ def guardar_viaje(datos: dict):
     conexion = conectar_bd()
 
     try:
+        # Buscar o crear acompañante
+        nombre_acompanante = datos.get("acompañante", "").strip()
+        id_acompanante = None
+
+        if nombre_acompanante:
+            coincidencias = buscar_acompañante_por_nombre(
+                conexion, nombre_acompanante
+            )
+            print("Nombre recibido:", repr(nombre_acompanante))
+            print("Coincidencias:", coincidencias)
+
+            acompanante = next(
+                (a for a in coincidencias
+                 if a["nombre"].casefold() == nombre_acompanante.casefold()),
+                None
+            )
+
+            if acompanante:
+                id_acompanante = acompanante["id"]
+            else:
+                id_acompanante = crear_acompañante(
+                    conexion, nombre_acompanante
+                )
+
+        # Crear viaje
         id_viaje = crear_viaje(
             conexion,
             datos["fecha"],
             datos["km"],
             datos["dinero_bruto"],
             datos["gastos"],
-            datos.get("id_acompañante")
+            id_acompanante
         )
 
+        # Recorrer destinos
         for destino in datos["destinos"]:
-            id_destino = buscar_destino_por_nombre(
+            coincidencias = buscar_destino_por_nombre(
                 conexion, destino["nombre"]
             )
 
-            if id_destino:
-                id_destino = id_destino[0]["id"]
+            destino_existente = next(
+                (d for d in coincidencias
+                 if d["nombre"].casefold() == destino["nombre"].strip().casefold()),
+                None
+            )
+
+            if destino_existente:
+                id_destino = destino_existente["id"]
             else:
                 id_destino = crear_destino(
                     conexion, destino["nombre"], None
@@ -195,6 +228,7 @@ def guardar_viaje(datos: dict):
                 conexion, id_viaje, id_destino
             )
 
+            # Recorrer cargas
             for carga in destino.get("cargas", []):
                 coincidencias = buscar_pescado_por_nombre(
                     conexion, carga["pescado"]
@@ -213,14 +247,38 @@ def guardar_viaje(datos: dict):
                         conexion, carga["pescado"].strip().capitalize()
                     )
 
+                # Buscar o crear comprador
+                nombre_comprador = carga.get("comprador", "").strip()
+                id_comprador = None
+
+                if nombre_comprador:
+                    coincidencias = buscar_comprador_por_nombre(
+                        conexion, nombre_comprador
+                    )
+
+                    comprador = next(
+                        (c for c in coincidencias
+                         if c["nombre"].casefold() == nombre_comprador.casefold()),
+                        None
+                    )
+
+                    if comprador:
+                        id_comprador = comprador["id"]
+                    else:
+                        id_comprador = crear_comprador(
+                            conexion, nombre_comprador
+                        )
+
                 crear_carga(
                     conexion,
                     carga["kg"],
                     id_pescado,
-                    id_viaje_destino
+                    id_viaje_destino,
+                    id_comprador
                 )
 
         conexion.commit()
+
         return {"mensaje": "Viaje guardado", "id_viaje": id_viaje}
 
     except Exception as error:
@@ -229,3 +287,21 @@ def guardar_viaje(datos: dict):
 
     finally:
         conexion.close()
+
+@app.post("/calcular-km")
+def calcular_kilometros(datos: dict):
+    destinos = [
+        d["nombre"].strip()
+        for d in datos["destinos"]
+        if d["nombre"].strip()
+    ]
+
+    if not destinos:
+        return {"error": "Ingresá al menos un destino"}
+
+    km = calcular_km_recorrido(destinos)
+
+    if km is None:
+        return {"error": "No se pudo calcular el recorrido"}
+
+    return {"km": km}

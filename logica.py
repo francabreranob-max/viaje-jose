@@ -6,12 +6,23 @@ geolocalizador = Nominatim(user_agent="presupuesto_viaje_app")
 
 def obtener_coordenadas(ciudad):
     try:
-        # Le sumamos ", Argentina" para que la búsqueda sea precisa en el país
-        locacion = geolocalizador.geocode(ciudad + ", Argentina")
+        print("Buscando ciudad:", ciudad)
+
+        locacion = geolocalizador.geocode(
+            ciudad,
+            country_codes="ar",
+            timeout=15
+        )
+
         if locacion:
+            print("Encontrada:", locacion.address)
             return locacion.longitude, locacion.latitude
+
+        print("No encontrada:", ciudad)
+
     except Exception as e:
-        print(f"Error al buscar la ciudad: {e}")
+        print(f"Error al buscar {ciudad}: {e}")
+
     return None, None
 
 
@@ -55,17 +66,27 @@ def calcular_ruta_osrm(ciudad_origen, ciudad_destino):
         print(f"Error al conectar con el servicio de rutas: {e}")
         return None, None
 
-SALIDA="Victoria, Entre Rios, Argentina"    
-destinos=[SALIDA]
-distancia_total=0
-def recorridos(parada,distancia_total):
-    inicio=destinos[-1]
-    distancia,tiempo=calcular_ruta_osrm(inicio,parada)
-    destinos.append(parada)
-    distancia_total+=distancia
-    return distancia_total
+SALIDA = "Victoria, Entre Rios, Argentina"
 
-def vuelta(distancia_total):
-    km_vuelta,tiempo_vuelta=calcular_ruta_osrm(destinos[-1],SALIDA)
-    distancia_total+=km_vuelta
-    return km_vuelta,distancia_total
+def calcular_km_recorrido(lista_destinos):
+    distancia_total = 0
+    inicio = SALIDA
+
+    for parada in lista_destinos:
+        distancia, tiempo = calcular_ruta_osrm(inicio, parada)
+
+        if distancia is None:
+            return None
+
+        distancia_total += distancia
+        inicio = parada
+
+    # Regresar desde el último destino hasta Victoria
+    km_vuelta, tiempo_vuelta = calcular_ruta_osrm(inicio, SALIDA)
+
+    if km_vuelta is None:
+        return None
+
+    distancia_total += km_vuelta
+
+    return round(distancia_total, 2)

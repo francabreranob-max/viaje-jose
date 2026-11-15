@@ -224,13 +224,12 @@ def crear_viaje_destino(conexion, id_viaje, id_destino):
     return nuevo_id
 
 
-def crear_carga(conexion, kg, id_pescado, id_viaje_destino):
+def crear_carga(conexion, kg, id_pescado, id_viaje_destino, id_comprador=None):
     cursor = conexion.cursor()
-
     cursor.execute(
-        """INSERT INTO carga (kilogramos, id_pescado, id_viaje_destino)
-           VALUES (%s, %s, %s)""",
-        (kg, id_pescado, id_viaje_destino)
+        """INSERT INTO carga
+           (kilogramos, id_pescado, id_viaje_destino, id_comprador)
+           VALUES (%s, %s, %s, %s)""",
+        (kg, id_pescado, id_viaje_destino, id_comprador)
     )
-
     cursor.close()
